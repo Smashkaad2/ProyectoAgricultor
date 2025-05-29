@@ -1,0 +1,105 @@
+version: '3.8'
+
+services:
+  # Primer conjunto de servicios (IoT)
+  db-iot:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: iotbase
+      POSTGRES_USER: user2
+      POSTGRES_PASSWORD: userpassword2
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres-data-iot:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user2 -d iotbase"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - iot-network
+
+  pgadmin-iot:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin2@admin2.com
+      PGADMIN_DEFAULT_PASSWORD: admin2
+    ports:
+      - "8081:80"
+    depends_on:
+      db-iot:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - iot-network
+
+  sensor-api:
+    build:
+      context: ./IOT/sensor-api
+      dockerfile: src/main/docker/Dockerfile.jvm
+    ports:
+      - "8080:8080"
+    environment:
+      QUARKUS_PROFILE: prod
+      QUARKUS_DATASOURCE_JDBC_URL: jdbc:postgresql://db-iot:5432/iotbase
+      QUARKUS_DATASOURCE_USERNAME: user2
+      QUARKUS_DATASOURCE_PASSWORD: userpassword2
+    depends_on:
+      db-iot:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - iot-network
+
+  # Segundo conjunto de servicios (Agricultura)
+  db-agri:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: agriculbase
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: userpassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data-agri:/var/lib/postgresql/data
+    networks:
+      - agri-network
+
+  pgadmin-agri:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "8082:80"
+    depends_on:
+      - db-agri
+    networks:
+      - agri-network
+
+  api-agri:
+    build:
+      context: ./Productos/ProductsService.API
+      dockerfile: Docker/Dockerfile
+    ports:
+      - "5206:80"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: "Host=db-agri;Port=5432;Database=agriculbase;Username=user;Password=userpassword"
+      ASPNETCORE_URLS: "http://+:80"
+    depends_on:
+      - db-agri
+    networks:
+      - agri-network
+
+volumes:
+  postgres-data-iot:
+  postgres-data-agri:
+
+networks:
+  iot-network:
+    driver: bridge
+  agri-network:
+    driver: bridge
