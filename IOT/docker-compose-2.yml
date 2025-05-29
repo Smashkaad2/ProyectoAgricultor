@@ -1,0 +1,48 @@
+services:
+  db2:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: iotbase
+      POSTGRES_USER: user2
+      POSTGRES_PASSWORD: userpassword2
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres-data-iot:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user2 -d iotbase"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  pgadmin2:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin2@admin2.com
+      PGADMIN_DEFAULT_PASSWORD: admin2
+    ports:
+      - "8081:80"
+    depends_on:
+      db2:
+        condition: service_healthy
+    restart: unless-stopped
+
+  sensor-api:
+    build:
+      context: ./sensor-api
+      dockerfile: src/main/docker/Dockerfile.jvm
+    ports:
+      - "8080:8080"
+    environment:
+      QUARKUS_PROFILE: prod
+      QUARKUS_DATASOURCE_JDBC_URL: jdbc:postgresql://db2:5432/iotbase
+      QUARKUS_DATASOURCE_USERNAME: user2
+      QUARKUS_DATASOURCE_PASSWORD: userpassword2
+    depends_on:
+      db2:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  postgres-data-iot:
