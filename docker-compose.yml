@@ -1,7 +1,25 @@
 version: '3.8'
 
 services:
-  # Primer conjunto de servicios (IoT)
+  # Primer conjunto de servicios (IoT) - Con RabbitMQ
+  rabbitmq:
+    image: rabbitmq:3.13-management  # Versión actualizada
+    hostname: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: iotuser
+      RABBITMQ_DEFAULT_PASS: iotpassword
+    ports:
+      - "5672:5672"  # Puerto AMQP
+      - "15672:15672"  # Puerto de la interfaz web
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "status"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - iot-network
+
   db-iot:
     image: postgres:16
     environment:
@@ -46,14 +64,20 @@ services:
       QUARKUS_DATASOURCE_JDBC_URL: jdbc:postgresql://db-iot:5432/iotbase
       QUARKUS_DATASOURCE_USERNAME: user2
       QUARKUS_DATASOURCE_PASSWORD: userpassword2
+      QUARKUS_RABBITMQ_HOST: rabbitmq  # Conexión al servicio RabbitMQ
+      QUARKUS_RABBITMQ_PORT: 5672
+      QUARKUS_RABBITMQ_USERNAME: iotuser
+      QUARKUS_RABBITMQ_PASSWORD: iotpassword
     depends_on:
       db-iot:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
     restart: unless-stopped
     networks:
       - iot-network
 
-  # Segundo conjunto de servicios (Agricultura)
+  # Segundo conjunto de servicios (Agricultura) - Sin RabbitMQ
   db-agri:
     image: postgres:16
     environment:
