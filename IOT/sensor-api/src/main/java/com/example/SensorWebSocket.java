@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class SensorWebSocket {
     private static final Logger LOG = Logger.getLogger(SensorWebSocket.class);
     private final Map<String, Session> sessions = new ConcurrentHashMap<>();
-    private final Jsonb jsonb = JsonbBuilder.create();
+    private static final Jsonb jsonb = JsonbBuilder.create();
 
     @OnOpen
     public void onOpen(Session session) {
@@ -45,13 +45,24 @@ public class SensorWebSocket {
     }
 
     public void broadcast(Object message) {
-        String jsonMessage = jsonb.toJson(message);
-        sessions.values().forEach(s -> {
-            s.getAsyncRemote().sendText(jsonMessage, result -> {
-                if (result.getException() != null) {
-                    LOG.error("Error al enviar mensaje", result.getException());
+        if (sessions.isEmpty()) {
+            LOG.debug("No hay clientes WebSocket conectados");
+            return;
+        }
+        
+        try {
+            String jsonMessage = jsonb.toJson(message);
+            sessions.values().forEach(s -> {
+                if (s.isOpen()) {
+                    s.getAsyncRemote().sendText(jsonMessage, result -> {
+                        if (result.getException() != null) {
+                            LOG.error("Error al enviar mensaje WebSocket", result.getException());
+                        }
+                    });
                 }
             });
-        });
+        } catch (Exception e) {
+            LOG.error("Error al serializar mensaje para WebSocket", e);
+        }
     }
 }

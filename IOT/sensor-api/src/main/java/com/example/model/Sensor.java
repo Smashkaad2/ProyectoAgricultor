@@ -32,4 +32,62 @@ public class Sensor extends PanacheEntity {
         this.calidadAire = calidadAire;
         this.nivelFertilizacion = nivelFertilizacion;
     }
+
+
+    public String getNombre() {
+        return this.nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public String getUbicacion() {
+        return this.ubicacion;
+    }
+
+    public void setUbicacion(String ubicacion) {
+        this.ubicacion = ubicacion;
+    }
+
+    public Double getHumedadSuelo() {
+        return this.humedadSuelo;
+    }
+
+    public void setHumedadSuelo(Double humedadSuelo) {
+        this.humedadSuelo = humedadSuelo;
+    }
+
+    public Double getTemperatura() {
+        return this.temperatura;
+    }
+
+    public void setTemperatura(Double temperatura) {
+        this.temperatura = temperatura;
+    }
+
+    public Integer getCalidadAire() {
+        return this.calidadAire;
+    }
+
+    public void setCalidadAire(Integer calidadAire) {
+        this.calidadAire = calidadAire;
+    }
+
+    public Double getNivelFertilizacion() {
+        return this.nivelFertilizacion;
+    }
+
+    public void setNivelFertilizacion(Double nivelFertilizacion) {
+        this.nivelFertilizacion = nivelFertilizacion;
+    }
+
+    public LocalDateTime getFechaRegistro() {
+        return this.fechaRegistro;
+    }
+
+    public void setFechaRegistro(LocalDateTime fechaRegistro) {
+        this.fechaRegistro = fechaRegistro;
+    }
+
 }
