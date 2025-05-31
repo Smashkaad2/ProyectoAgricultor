@@ -1,4 +1,24 @@
+version: '3.8'
+
 services:
+  # Servicio de RabbitMQ
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    hostname: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: iotuser
+      RABBITMQ_DEFAULT_PASS: iotpassword
+    ports:
+      - "5672:5672"  # Puerto AMQP
+      - "15672:15672"  # Puerto de la interfaz web
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "status"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+
+  # Servicio de PostgreSQL
   db2:
     image: postgres:16
     environment:
@@ -16,6 +36,7 @@ services:
       retries: 5
     restart: unless-stopped
 
+  # Servicio de PgAdmin
   pgadmin2:
     image: dpage/pgadmin4
     environment:
@@ -28,6 +49,7 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  # Servicio de la API Quarkus
   sensor-api:
     build:
       context: ./sensor-api
@@ -39,8 +61,14 @@ services:
       QUARKUS_DATASOURCE_JDBC_URL: jdbc:postgresql://db2:5432/iotbase
       QUARKUS_DATASOURCE_USERNAME: user2
       QUARKUS_DATASOURCE_PASSWORD: userpassword2
+      QUARKUS_RABBITMQ_HOST: rabbitmq
+      QUARKUS_RABBITMQ_PORT: 5672
+      QUARKUS_RABBITMQ_USERNAME: iotuser
+      QUARKUS_RABBITMQ_PASSWORD: iotpassword
     depends_on:
       db2:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
     restart: unless-stopped
 

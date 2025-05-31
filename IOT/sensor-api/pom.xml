@@ -30,6 +30,12 @@
     </dependencyManagement>
 
     <dependencies>
+        <!-- RabbitMQ  -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-messaging-rabbitmq</artifactId>
+        </dependency>
+        
         <!-- WebSocket -->
         <dependency>
             <groupId>io.quarkus</groupId>
