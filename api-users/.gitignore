@@ -1,0 +1,31 @@
+# Carpetas y archivos a ignorar
+node_modules/
+.DS_Store
+.env
+.env.local
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Directorios de dependencias y builds
+/dist
+/coverage
+/.next
+/.nuxt
+/.cache
+/.svelte-kit
+
+# Configuraciones de IDE y editores
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Logs y temp
+logs/
+*.log
+tmp/
+temp/
