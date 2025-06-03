@@ -143,6 +143,27 @@ services:
     networks:
       - user-network
 
+  api-users:
+    build:
+      context: ./api-users
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      POSTGRES_HOST: postgres    # Nombre del servicio en Docker
+      POSTGRES_PORT: 5432       # Puerto interno de PostgreSQL
+      POSTGRES_DB: products_db
+      POSTGRES_USER: products_user
+      POSTGRES_PASSWORD: products_password
+      KEYCLOAK_URL: http://keycloak:8080  # URL interna de Keycloak
+    depends_on:
+      - keycloak
+      - postgres
+    networks:
+      - user-network
+      - agri-network
+
 volumes:
   postgres-data-iot:
   postgres-data-agri:
